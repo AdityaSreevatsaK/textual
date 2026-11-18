@@ -417,7 +417,7 @@ class Reactive(Generic[ReactiveType]):
             obj: Reactable object.
         """
         _rich_traceback_guard = True
-        for compute in obj._reactives.keys() & obj._computes:
+        for compute in sorted(obj._reactives.keys() & obj._computes):
             try:
                 compute_method = getattr(obj, f"compute_{compute}")
             except AttributeError:
