@@ -279,7 +279,7 @@ async def test_reactive_method_call_order():
 
 
 async def test_computed_reactive_watchers_have_stable_order():
-    """Computed watcher order is deterministic across Python hash seeds."""
+    """Regression for https://github.com/Textualize/textual/issues/6790."""
 
     class ComputeApp(App):
         value = reactive(0)
