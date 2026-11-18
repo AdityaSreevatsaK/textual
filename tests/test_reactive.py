@@ -278,6 +278,52 @@ async def test_reactive_method_call_order():
         assert app.count_times_ten == (NEW_VALUE + 1) * 10
 
 
+async def test_computed_reactive_watchers_have_stable_order():
+    """Computed watcher order is deterministic across Python hash seeds."""
+
+    class ComputeApp(App):
+        value = reactive(0)
+        alpha = reactive(0)
+        beta = reactive(0)
+        gamma = reactive(0)
+        delta = reactive(0)
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.calls: list[str] = []
+
+        def compute_alpha(self) -> int:
+            return self.value + 1
+
+        def compute_beta(self) -> int:
+            return self.value + 2
+
+        def compute_gamma(self) -> int:
+            return self.value + 3
+
+        def compute_delta(self) -> int:
+            return self.value + 4
+
+        def watch_alpha(self) -> None:
+            self.calls.append("alpha")
+
+        def watch_beta(self) -> None:
+            self.calls.append("beta")
+
+        def watch_gamma(self) -> None:
+            self.calls.append("gamma")
+
+        def watch_delta(self) -> None:
+            self.calls.append("delta")
+
+    app = ComputeApp()
+    async with app.run_test() as pilot:
+        app.calls.clear()
+        app.value = 10
+        await pilot.pause()
+        assert app.calls == ["alpha", "beta", "delta", "gamma"]
+
+
 async def test_premature_reactive_call():
     watcher_called = False
 
